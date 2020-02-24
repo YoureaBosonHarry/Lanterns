@@ -1,0 +1,64 @@
+#Lantern_NeoPixels
+version: '3'
+services:
+  nginx:
+    image: nginx:1.15-alpine
+    networks:
+      - neopixelnet
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - ./nginx/certs:/root/certs
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "500k"
+        max-file:  "10"
+  neopixels:
+    image: neopixel_lanterns:0.1.0
+    environment:
+      - NUMLEDS=32
+    ports: 
+      - "81:80"
+    networks:
+      - neopixelnet
+    privileged: true
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "500k"
+        max-file:  "10"
+  neopixellistener:
+    image: lanterns_api:0.1.0
+    environment:
+      - PIXELSURL=http://neopixels
+    networks:
+      - neopixelnet
+    ports:
+      - "82:80"
+    privileged: true
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "500k"
+        max-file:  "10"
+  alarmclock:
+    image: alarmclock:0.1.0
+    environment:
+      - ENDPOINT=http://neopixels
+    networks:
+      - neopixelnet
+    privileged: true
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "500k"
+        max-file:  "10"
+networks:
+  neopixelnet:
